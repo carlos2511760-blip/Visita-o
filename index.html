@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Wanderer 3D — Lugares Famosos do Mundo</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Three.js Canvas -->
+  <canvas id="webgl-canvas"></canvas>
+
+  <!-- 1. TITLE SCREEN / COMEÇAR -->
+  <div id="title-screen">
+    <div class="title-badge">Experiência 3D Interativa</div>
+    <h1 class="title-heading">WANDERER</h1>
+    <p class="title-subheading">
+      Explore os lugares mais célebres do mundo em um ambiente tridimensional acolhedor,
+      ao som de uma trilha lo-fi relaxante. Sem combate, sem pressa.
+    </p>
+
+    <div class="dest-preview-tags">
+      <span class="dest-tag">📍 Torre Eiffel & Paris</span>
+      <span class="dest-tag">📍 Cristo Redentor & Rio</span>
+      <span class="dest-tag">✨ Cel-Shaded & Cozy</span>
+      <span class="dest-tag">☕ Sem Pressa</span>
+    </div>
+
+    <button type="button" class="btn-capsule-cta" id="btn-start-game">
+      <span>Começar a Explorar</span>
+      <span>➔</span>
+    </button>
+  </div>
+
+  <!-- 2. IN-GAME HUD -->
+  <div id="hud">
+    <!-- Top Bar -->
+    <header class="hud-topbar">
+      <div class="hud-pill">
+        <span id="hud-destination-name">Paris — Torre Eiffel</span>
+        <button type="button" class="hud-pill-button" id="btn-change-destination" style="padding: 3px 8px; font-size: 11px;">Mudar Destino</button>
+      </div>
+
+      <div class="hud-topbar-actions">
+        <button type="button" class="hud-pill-button" id="btn-journal">📮 Descobertas</button>
+        <button type="button" class="hud-pill-button" id="btn-customize-avatar">👕 Avatar</button>
+        <button type="button" class="hud-pill-button" id="btn-photo-mode">📷 Foto</button>
+        <button type="button" class="hud-pill-button" id="btn-mute">🔊 Som</button>
+      </div>
+    </header>
+
+    <!-- Reaction Emote Bar (Messenger Style) -->
+    <div id="emote-bar">
+      <button type="button" class="emote-btn" data-emoji="👋" title="Acenar">👋</button>
+      <button type="button" class="emote-btn" data-emoji="✨" title="Brilho">✨</button>
+      <button type="button" class="emote-btn" data-emoji="❤️" title="Coração">❤️</button>
+      <button type="button" class="emote-btn" data-emoji="👀" title="Observar">👀</button>
+      <button type="button" class="emote-btn" data-emoji="☕" title="Café">☕</button>
+      <button type="button" class="emote-btn" data-emoji="📸" title="Fotografar">📸</button>
+      <button type="button" class="emote-btn" data-emoji="🌸" title="Flor">🌸</button>
+      <button type="button" class="emote-btn" data-emoji="🎵" title="Música">🎵</button>
+    </div>
+
+    <!-- Dynamic Interaction Prompt -->
+    <div id="interaction-prompt">
+      <span class="prompt-key-badge" id="prompt-key">E</span>
+      <span class="prompt-label" id="prompt-text">Conversar</span>
+    </div>
+
+    <!-- Dialogue Box (Messenger DS Design) -->
+    <div id="dialogue-box">
+      <div class="dialogue-header">
+        <div class="dialogue-speaker-pill">
+          <span class="dialogue-speaker-dot"></span>
+          <span id="dialogue-speaker">Pierre</span>
+        </div>
+        <button type="button" class="dialogue-close-btn" id="dialogue-close">✕</button>
+      </div>
+      <div class="dialogue-body-text" id="dialogue-text">...</div>
+      <div class="dialogue-footer">
+        <span>Clique para continuar</span>
+        <span class="dialogue-arrow">➔</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. PHOTO MODE OVERLAY -->
+  <div id="photo-overlay">
+    <div class="photo-viewfinder"></div>
+
+    <div class="photo-postcard-stamp">
+      <div class="photo-stamp-title" id="photo-location-text">Paris — Torre Eiffel</div>
+      <div class="photo-stamp-date" id="photo-date-text">29 out 2026</div>
+      <div style="font-size: 10px; color: #8b949e; margin-top: 2px;">WANDERER 3D POSTCARD</div>
+    </div>
+
+    <div class="photo-bottom-controls">
+      <button type="button" class="hud-pill-button" id="btn-exit-photo">Voltar</button>
+      <button type="button" class="btn-shutter" id="btn-take-photo" title="Tirar Foto"></button>
+    </div>
+
+    <div id="photo-flash"></div>
+  </div>
+
+  <!-- 4. DESTINATION SWITCHER MODAL -->
+  <div class="modal-overlay" id="modal-destinations">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">Escolher Destino</h2>
+        <button type="button" class="modal-close-btn" id="modal-dest-close">✕</button>
+      </div>
+
+      <div class="dest-grid">
+        <!-- Paris -->
+        <div class="dest-card" data-dest="paris">
+          <div style="font-size: 24px;">🗼</div>
+          <div class="dest-card-title">Torre Eiffel & Paris</div>
+          <div class="dest-card-desc">
+            Passeie pelo Champ de Mars sob a luz dourada do entardecer. Tome um café bistrô
+            e converse com os artistas locais.
+          </div>
+        </div>
+
+        <!-- Rio de Janeiro -->
+        <div class="dest-card" data-dest="rio">
+          <div style="font-size: 24px;">⛰️</div>
+          <div class="dest-card-title">Cristo Redentor & Rio</div>
+          <div class="dest-card-desc">
+            Suba ao cume do Morro do Corcovado. Contemple a vista da Baía de Guanabara
+            e do Pão de Açúcar com água de coco fresca.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. AVATAR CUSTOMIZER MODAL -->
+  <div class="modal-overlay" id="modal-customizer">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">Personalizar Avatar</h2>
+        <button type="button" class="modal-close-btn" id="modal-custom-close">✕</button>
+      </div>
+
+      <!-- Jacket Color -->
+      <div class="customizer-section">
+        <div class="customizer-label">Cor da Jaqueta</div>
+        <div class="palette-row">
+          <button type="button" class="palette-color-btn active" data-part="jacket" data-color="66bde6" style="background: #66bde6;"></button>
+          <button type="button" class="palette-color-btn" data-part="jacket" data-color="c25959" style="background: #c25959;"></button>
+          <button type="button" class="palette-color-btn" data-part="jacket" data-color="5b9f7b" style="background: #5b9f7b;"></button>
+          <button type="button" class="palette-color-btn" data-part="jacket" data-color="f59e0b" style="background: #f59e0b;"></button>
+          <button type="button" class="palette-color-btn" data-part="jacket" data-color="8b5cf6" style="background: #8b5cf6;"></button>
+        </div>
+      </div>
+
+      <!-- Backpack Color -->
+      <div class="customizer-section">
+        <div class="customizer-label">Mochila de Viagem</div>
+        <div class="palette-row">
+          <button type="button" class="palette-color-btn active" data-part="backpack" data-color="c25959" style="background: #c25959;"></button>
+          <button type="button" class="palette-color-btn" data-part="backpack" data-color="5b9f7b" style="background: #5b9f7b;"></button>
+          <button type="button" class="palette-color-btn" data-part="backpack" data-color="66bde6" style="background: #66bde6;"></button>
+          <button type="button" class="palette-color-btn" data-part="backpack" data-color="374151" style="background: #374151;"></button>
+        </div>
+      </div>
+
+      <!-- Hat Style -->
+      <div class="customizer-section">
+        <div class="customizer-label">Acessório de Cabeça</div>
+        <div class="hat-select-row">
+          <button type="button" class="hat-select-btn active" data-hat="beret">Boina Francesa</button>
+          <button type="button" class="hat-select-btn" data-hat="visor">Viseira Tropical</button>
+          <button type="button" class="hat-select-btn" data-hat="beanie">Gorro Cozy</button>
+          <button type="button" class="hat-select-btn" data-hat="none">Nenhum</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. TRAVEL JOURNAL MODAL -->
+  <div class="modal-overlay" id="modal-journal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">Caderno de Descobertas</h2>
+        <button type="button" class="modal-close-btn" id="modal-journal-close">✕</button>
+      </div>
+
+      <div class="journal-list" id="journal-list">
+        <!-- Rendered dynamically by UIManager -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. MOBILE TOUCH CONTROLS -->
+  <div id="touch-controls">
+    <div id="joystick-base">
+      <div id="joystick-knob"></div>
+    </div>
+
+    <div class="touch-action-buttons">
+      <button type="button" class="touch-action-btn" id="btn-touch-interact">E</button>
+      <button type="button" class="touch-action-btn" id="btn-touch-sprint">Correr</button>
+      <button type="button" class="touch-action-btn" id="btn-touch-jump">Pular</button>
+    </div>
+  </div>
+
+  <!-- Main ES Module Script -->
+  <script type="module" src="src/main.js"></script>
+
+</body>
+</html>
